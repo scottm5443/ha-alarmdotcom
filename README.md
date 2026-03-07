@@ -35,7 +35,6 @@ Community feedback and testing are welcome.
 ---
 
 <p align="center">
-  <a href="https://github.com/ibasebcast/ha-alarmdotcom/actions/workflows/hassfest.yaml"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/ibasebcast/ha-alarmdotcom/hassfest.yaml"></a>
   <a href="https://results.pre-commit.ci/latest/github/ibasebcast/ha-alarmdotcom/main"><img src="https://results.pre-commit.ci/badge/github/ibasebcast/ha-alarmdotcom/main.svg" /></a>
   <a href="https://github.com/ibasebcast/ha-alarmdotcom/commits/main"><img src="https://img.shields.io/github/commit-activity/y/ibasebcast/ha-alarmdotcom.svg" /></a>
 </p>

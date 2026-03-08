@@ -1,5 +1,3 @@
----
-
 # Maintained Fork
 
 This repository is an actively maintained fork of the original **Alarm.com for Home Assistant** integration.

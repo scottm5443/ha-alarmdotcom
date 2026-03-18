@@ -3,7 +3,7 @@
 All notable changes to the Alarm.com Home Assistant integration will be documented in this file.
 
 ---
-## 2026.3.18
+## 2026.3.18.2
 
 ### Fixed
 - Resolved issue where one-time password (OTP) was not sent during initial login when only a single 2FA method was available

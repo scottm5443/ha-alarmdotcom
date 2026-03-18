@@ -3,6 +3,26 @@
 All notable changes to the Alarm.com Home Assistant integration will be documented in this file.
 
 ---
+## 2026.3.18
+
+### Fixed
+- Resolved issue where one-time password (OTP) was not sent during initial login when only a single 2FA method was available
+- Fixed config flow skipping OTP request step, causing users to be stuck on verification screen
+- Corrected OTP handling logic to properly request codes for SMS and email methods
+
+### Improved
+- Enhanced multi-factor authentication flow to handle all supported Alarm.com verification methods correctly
+- Added safeguards for lost or invalid OTP method state during login
+- Improved error handling and user feedback during authentication process
+- Updated device registry identifiers to ensure compatibility with Home Assistant requirements
+
+### Changed
+- Updated pyalarmdotcomajax dependency to custom GitHub version with OTP fixes
+- Cleaned up config flow logic for better reliability and maintainability
+
+### Other
+- Reordered manifest.json fields to meet Home Assistant and hassfest validation requirements
+- General code cleanup and logging improvements
 
 ## 2026.3.16
 

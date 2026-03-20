@@ -1,3 +1,13 @@
+## 2026.3.20.0
+
+### Added
+- Initial Alarm.com camera entity support
+- WebRTC token retrieval for compatible Alarm.com cameras
+- Custom Lovelace WebRTC card at `www/alarm-webrtc-card.js`
+
+### Dependency Updates
+- Updated `pyalarmdotcomajax` dependency to `2026.3.20`
+
 # Changelog
 
 All notable changes to the Alarm.com Home Assistant integration will be documented in this file.

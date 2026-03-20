@@ -82,6 +82,7 @@ PLATFORMS = [
     Platform.COVER,
     Platform.LIGHT,
     Platform.BUTTON,
+    Platform.CAMERA,
     Platform.CLIMATE,
     Platform.VALVE,
     # Platform.NUMBER,

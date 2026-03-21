@@ -3,31 +3,45 @@
 All notable changes to the Alarm.com Home Assistant integration will be documented in this file.
 
 ---
-## 2026.3.20
+## 2026.3.21
+
+Builds on 2026.3.18.2 with camera support, a full bug fix pass across all platforms, and HACS readiness improvements.
 
 ### Added
 - **Camera support**: WebRTC live-streaming for Alarm.com cameras via a custom Lovelace card (`www/alarm-webrtc-card.js`)
-- Camera entities include automatic token refresh every 45 minutes so streams are always ready
-- Still image snapshots now supported — camera thumbnails display correctly in the HA media browser and dashboard cards
+- Camera entities automatically refresh WebRTC tokens every 45 minutes so streams are always ready without manual intervention
+- Still image snapshots now supported — camera thumbnails display correctly in the HA media browser and picture-glance dashboard cards
+- `brand/logo.png` added for HACS integration detail page display
+- `info.md` added for HACS store listing
 
 ### Fixed
-- `lock.py`: `code_format_fn` now correctly returns `CodeFormat.NUMBER` / `CodeFormat.TEXT` instead of raw regex strings, fixing silent failure of lock code format enforcement
-- `alarm_control_panel.py`: Removed duplicate arm code validation that ran twice on every arm/disarm command
-- `util.py`: Orphan cleanup logic rewritten — entities without a `unique_id` were incorrectly deleted on every restart; they are now matched solely by `entity_id`
-- `climate.py`: `async_set_temperature` was reading `kwargs.get("target_temp")` but HA sends `"temperature"` (ATTR_TEMPERATURE), meaning single-target temperature changes silently did nothing
-- `climate.py`: Combined two sequential `set_state` API calls for high/low setpoints into a single call
-- `climate.py`: Fixed mismatched `# fmt: off` / `# fmt: on` comment pair in `initiate_state`
-- `cover.py`: Gates now correctly use `CoverDeviceClass.GATE` instead of `CoverDeviceClass.GARAGE`
-- `entity.py`: Removed unreachable duplicate `return device_info` statement
-- `camera_api.py`: Auth retries now only trigger on HTTP 401/403 instead of catching all exceptions
-- `alarm-webrtc-card.js`: Fixed `visibilitychange` event listener leak — listeners now properly removed in `disconnectedCallback`
-- `alarm-webrtc-card.js`: Fixed `_requesting` flag deadlock — a 15-second safety timeout now resets the flag if HA never responds to a `turn_on` call
-- `alarm-webrtc-card.js`: `callService` failures now immediately reset the `_requesting` flag instead of freezing the card
+
+#### Platforms
+- **Thermostat**: `async_set_temperature` was silently doing nothing — it read `kwargs.get("target_temp")` but HA sends `"temperature"` (`ATTR_TEMPERATURE`). Single-target temperature changes now work correctly
+- **Thermostat**: High/low setpoints now sent in a single API call instead of two sequential calls, avoiding potential race conditions and rate limiting
+- **Thermostat**: Fixed mismatched `# fmt: off` / `# fmt: on` comment pair in `initiate_state`
+- **Lock**: `code_format_fn` now correctly returns `CodeFormat.NUMBER` / `CodeFormat.TEXT` instead of raw regex strings that HA doesn't understand, fixing silent failure of lock code format enforcement
+- **Lock**: Removed `import re` buried inside a function body — moved to top-level import
+- **Alarm Panel**: Removed duplicate arm code validation that ran twice on every arm/disarm command (once silently, once raising an exception)
+- **Cover**: Gates now correctly use `CoverDeviceClass.GATE` instead of `CoverDeviceClass.GARAGE` — gate entities now show the correct icon and label in HA
+- **Entity**: Removed unreachable duplicate `return device_info` statement in `device_info_fn`
+
+#### Infrastructure
+- **Orphan cleanup** (`util.py`): Entities without a `unique_id` were incorrectly deleted on every HA restart because the match condition was inverted. They are now matched solely by `entity_id` as intended
+- **Camera session** (`camera_api.py`): Auth retries now only trigger on HTTP 401/403 responses instead of catching all exceptions blindly
+- **Camera import** (`__init__.py`): Fixed `NameError` — `CONF_MFA_TOKEN`, `CONF_USERNAME`, and `CONF_PASSWORD` were referenced before being imported
+- **Config flow** (`config_flow.py`): Replaced deprecated `async_timeout` package (removed in HA 2024.x) with `asyncio.timeout`
+
+#### Lovelace Card (`www/alarm-webrtc-card.js`)
+- Fixed `visibilitychange` event listener leak — a new listener was added on every stream restart and never removed. Listeners are now stored and cleaned up in `disconnectedCallback`
+- Fixed `_requesting` flag deadlock — if HA never responded to a `camera.turn_on` call the card would freeze on "Refreshing session..." indefinitely. A 15-second safety timeout now resets the flag automatically
+- `callService` failures now immediately reset `_requesting` instead of leaving the card frozen
 
 ### Improved
-- Camera session now reuses the authenticated `pyalarmdotcomajax` HTTP session where possible, avoiding a second login on startup
-- Camera session initialization falls back gracefully to an independent login if session sharing is not available
-- README updated with full camera setup instructions and Lovelace card configuration
+- Camera session reuses the authenticated `pyalarmdotcomajax` HTTP session where possible, avoiding a second full login on every HA startup. Falls back gracefully to an independent login if session internals are not accessible
+- README updated with full camera setup instructions, Lovelace card configuration example, and camera added to supported devices table
+- Camera removed from roadmap in README since it is now implemented
+- Cleaned up dead commented-out platform stubs (`Platform.NUMBER`, `Platform.SWITCH`, `Platform.SELECT`) from `const.py`
 
 ---
 

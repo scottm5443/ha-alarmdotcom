@@ -311,7 +311,7 @@ async def set_fan_mode_fn(
         resource = controller.get(thermostat_id)
         supported = list(getattr(getattr(resource, "attributes", None), "supported_fan_durations", None) or [])
         non_zero = sorted(d for d in supported if d > 0)
-        msg_body["desiredFanDuration"] = non_zero[-1] if non_zero else 1440
+        msg_body["desiredFanDuration"] = non_zero[0] if non_zero else 60
 
     await controller._send_command(  # noqa: SLF001
         thermostat_id,

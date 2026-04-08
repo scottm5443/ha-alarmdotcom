@@ -293,8 +293,21 @@ async def set_fan_mode_fn(
         FAN_CIRCULATE: pyadc.thermostat.ThermostatFanMode.CIRCULATE,
     }
 
-    if requested_fan_mode := fan_mode_map.get(fan_mode):
-        await controller.set_state(thermostat_id, fan_mode=requested_fan_mode, fan_mode_duration=0)
+    requested_fan_mode = fan_mode_map.get(fan_mode)
+    if requested_fan_mode is None:
+        return
+
+    # The ibasebcast/pyalarmdotcomajax library has a validation bug in set_state:
+    # fan_mode and fan_mode_duration are required together, but passing both triggers
+    # the "only one attribute" validator (counts them as 2 non-None values).
+    # We bypass set_state and call _send_command directly with the correct payload.
+    # desiredFanDuration=0 means "no timer" (run until manually changed), which is
+    # the correct default for all fan modes when no specific duration is requested.
+    await controller._send_command(  # noqa: SLF001
+        thermostat_id,
+        "setState",
+        {"desiredFanMode": requested_fan_mode.value, "desiredFanDuration": 0},
+    )
 
 
 # @callback
@@ -319,12 +332,10 @@ async def set_temperature_fn(
     """Set the target temperature."""
 
     if target_temp_high and target_temp_low:
-        # Set both setpoints in a single API call to avoid triggering two state changes
-        await controller.set_state(
-            thermostat_id,
-            heat_setpoint=target_temp_low,
-            cool_setpoint=target_temp_high,
-        )
+        # The library only allows one attribute per set_state call, so we make two
+        # sequential calls — one for each setpoint.
+        await controller.set_state(thermostat_id, heat_setpoint=target_temp_low)
+        await controller.set_state(thermostat_id, cool_setpoint=target_temp_high)
     elif target_temp and current_hvac_mode:
         if current_hvac_mode == HVACMode.HEAT:
             await controller.set_state(thermostat_id, heat_setpoint=target_temp)

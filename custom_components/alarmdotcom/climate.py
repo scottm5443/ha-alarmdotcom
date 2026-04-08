@@ -297,16 +297,26 @@ async def set_fan_mode_fn(
     if requested_fan_mode is None:
         return
 
-    # The ibasebcast/pyalarmdotcomajax library has a validation bug in set_state:
-    # fan_mode and fan_mode_duration are required together, but passing both triggers
-    # the "only one attribute" validator (counts them as 2 non-None values).
-    # We bypass set_state and call _send_command directly with the correct payload.
-    # desiredFanDuration=0 means "no timer" (run until manually changed), which is
-    # the correct default for all fan modes when no specific duration is requested.
+    # We call _send_command directly because the library's set_state has a validation
+    # bug where fan_mode + fan_mode_duration always triggers "Only one attribute can be
+    # set at a time" (counts the pair as 2 non-None values).
+    #
+    # AUTO and CIRCULATE modes do not use a timed duration — omit desiredFanDuration.
+    # ON mode requires a non-zero duration (Alarm.com supports e.g. 60/180/1440 min).
+    # We use the longest supported duration as the default for "On" (closest to
+    # indefinite). If supported_fan_durations is unavailable, default to 1440 (24 hr).
+    msg_body: dict = {"desiredFanMode": requested_fan_mode.value}
+
+    if requested_fan_mode == pyadc.thermostat.ThermostatFanMode.ON:
+        resource = controller.get(thermostat_id)
+        supported = list(getattr(getattr(resource, "attributes", None), "supported_fan_durations", None) or [])
+        non_zero = sorted(d for d in supported if d > 0)
+        msg_body["desiredFanDuration"] = non_zero[-1] if non_zero else 1440
+
     await controller._send_command(  # noqa: SLF001
         thermostat_id,
         "setState",
-        {"desiredFanMode": requested_fan_mode.value, "desiredFanDuration": 0},
+        msg_body,
     )
 
 

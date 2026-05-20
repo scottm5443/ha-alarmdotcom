@@ -1,0 +1,7 @@
+# Add this block to vendor.mk immediately after the lighttpd PRODUCT_COPY_FILES section
+# (find the line with "lighttpd/lighttpd.conf" and add this after that block)
+
+################################################################################
+# Custom root CA — trusts the fork's self-signed lighttpd certificates
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/services/lighttpd/ca/ca.crt:$(TARGET_COPY_OUT_SYSTEM)/etc/security/cacerts/tesla-android-ca.pem \
